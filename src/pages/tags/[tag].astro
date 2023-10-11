@@ -1,19 +1,44 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BlogPost from "../../components/BlogPost.astro";
 
+// 动态创建页面
+// 创建一个页面来生成多个页面
+// 这些页面有相同的模板
+// 数组里的每一个对象表示一个页面，params必须，props可选
+// 写在函数外的部分是从函数获得的参数，写在函数内的部分是从其他地方获得的数据
 export async function getStaticPaths() {
-  return [
-    { params: { tag: "astro" } },
-    { params: { tag: "successes" } },
-    { params: { tag: "community" } },
-    { params: { tag: "blogging" } },
-    { params: { tag: "setbacks" } },
-    { params: { tag: "learning in public" } },
+  const allProps = await Astro.glob("../posts/*.md");
+  // 从所有文章处获取所有tag
+  // flat，数组扁平化，去除嵌套，返回一个新数组，参数默认为1，去除一层嵌套
+  const uniqueTags = [
+    ...new Set(allProps.map((post) => post.frontmatter.tags).flat()),
   ];
+  return uniqueTags.map((tag) => {
+    // 获取所有包含此tag的文章
+    const filteredPosts = allProps.filter((post) =>
+      post.frontmatter.tags.includes(tag)
+    );
+    return {
+      params: { tag },
+      props: {
+        posts: filteredPosts,
+      },
+    };
+  });
 }
 
 const { tag } = Astro.params;
+const { posts } = Astro.props;
 ---
+
 <BaseLayout pageTitle={tag}>
   <p>Posts tagged with {tag}</p>
+  <ul>
+    {
+      posts.map((post) => (
+        <BlogPost url={post.url} title={post.frontmatter.title} />
+      ))
+    }
+  </ul>
 </BaseLayout>
