@@ -1,5 +1,6 @@
 import rss, { pagesGlobToRssItems } from "@astrojs/rss";
 
+// 用rss阅读器订阅你的netlify地址，注意要打包
 export async function GET(context) {
   return rss({
     title: "Astro Learner | Blog",
